@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../authMiddleware');
 const Carpool = require('../models/Carpool');
+const RideRequest = require('../models/RideRequest');
 
 // Create a new carpool (only for logged-in users)
 router.post('/', authMiddleware, async (req, res) => {
@@ -65,7 +66,7 @@ router.put('/join/:carpoolId', authMiddleware, async (req, res) => {
       console.error(err.message);
       res.status(500).send('Server error');
     }
-  });
+});
   
 
 // Leave an existing carpool
@@ -90,6 +91,40 @@ router.put('/leave/:carpoolId', authMiddleware, async (req, res) => {
         await carpool.save();
 
         res.json({ message: 'Successfully left the carpool', carpool });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// Create a new ride request (only for logged-in users)
+router.post('/ride-requests', authMiddleware, async (req, res) => {
+    console.log("Ride request received: ", req.body);  // Add this line to verify request hits the endpoint
+    const { event, date, startLocation, endLocation } = req.body;
+
+    try {
+        const newRideRequest = new RideRequest({
+            event,
+            requester: req.user.id,
+            date,
+            startLocation,
+            endLocation,
+        });
+
+        const rideRequest = await newRideRequest.save();
+        res.json(rideRequest);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// Get all ride requests (only for logged-in users)
+router.get('/ride-requests', authMiddleware, async (req, res) => {
+    try {
+        const rideRequests = await RideRequest.find()
+            .populate('requester', 'name email');  // Populate requester's name and email
+        res.json(rideRequests);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');

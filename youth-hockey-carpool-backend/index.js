@@ -72,7 +72,7 @@ const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
 // Carpool Routes
-const carpoolRoutes = require('./routes/carpool'); // Corrected from 'carpools' to 'carpool'
+const carpoolRoutes = require('./routes/carpool'); 
 app.use('/api/carpools', carpoolRoutes);
 
 // Import the auth middleware
