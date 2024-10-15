@@ -11,7 +11,7 @@ const Navbar = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsAuthenticated(!!token);
-  }, []);
+  }, [localStorage.getItem('token')]); // Updated useEffect with dependency on token change
 
   const toggleDrawer = (open) => (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -46,8 +46,8 @@ const Navbar = () => {
             <ListItem button component={Link} to="/carpool">
               <ListItemText primary="View Carpools" />
             </ListItem>
-            <ListItem button component={Link} to="/ride-request">
-              <ListItemText primary="Request a Ride" /> {/* New Ride Request Link */}
+            <ListItem button component={Link} to="/ride-requests">
+              <ListItemText primary="Ride Requests" />
             </ListItem>
             <ListItem button component={Link} to="/profile">
               <ListItemText primary="Profile" />
@@ -82,12 +82,9 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Button color="inherit" component={Link} to="/carpool">
-                View Carpools
+              <Button color="inherit" component={Link} to="/ride-requests">
+                Ride Requests
               </Button>
-              <Button color="inherit" component={Link} to="/ride-request">
-                Request a Ride
-              </Button> {/* New Ride Request Button in Navbar */}
               <Button color="inherit" onClick={handleLogout}>
                 Logout
               </Button>

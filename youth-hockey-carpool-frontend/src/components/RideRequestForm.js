@@ -19,7 +19,7 @@ const RideRequestForm = () => {
   const handleRequestRide = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/api/carpool/ride-requests', formData);
+      await api.post('/api/carpools/ride-requests', formData);
       setNotification({ open: true, message: 'Ride request created successfully!', severity: 'success' });
       setFormData({ event: '', date: '', startLocation: '', endLocation: '' });
     } catch (err) {

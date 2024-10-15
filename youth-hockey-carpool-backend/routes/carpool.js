@@ -41,33 +41,32 @@ router.get('/', authMiddleware, async (req, res) => {
 // Join an existing carpool
 router.put('/join/:carpoolId', authMiddleware, async (req, res) => {
     try {
-      const carpool = await Carpool.findById(req.params.carpoolId);
-  
-      if (!carpool) {
-        return res.status(404).json({ message: 'Carpool not found' });
-      }
-  
-      // Check if the user is already the driver
-      if (carpool.driver.toString() === req.user.id) {
-        return res.status(400).json({ message: 'Driver cannot join their own carpool as a passenger' });
-      }
-  
-      // Check if the user is already a passenger
-      if (carpool.passengers.includes(req.user.id)) {
-        return res.status(400).json({ message: 'You are already a passenger in this carpool' });
-      }
-  
-      // Add user to the passengers list
-      carpool.passengers.push(req.user.id);
-      await carpool.save();
-  
-      res.json({ message: 'Successfully joined the carpool', carpool });
+        const carpool = await Carpool.findById(req.params.carpoolId);
+
+        if (!carpool) {
+            return res.status(404).json({ message: 'Carpool not found' });
+        }
+
+        // Check if the user is already the driver
+        if (carpool.driver.toString() === req.user.id) {
+            return res.status(400).json({ message: 'Driver cannot join their own carpool as a passenger' });
+        }
+
+        // Check if the user is already a passenger
+        if (carpool.passengers.includes(req.user.id)) {
+            return res.status(400).json({ message: 'You are already a passenger in this carpool' });
+        }
+
+        // Add user to the passengers list
+        carpool.passengers.push(req.user.id);
+        await carpool.save();
+
+        res.json({ message: 'Successfully joined the carpool', carpool });
     } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
+        console.error(err.message);
+        res.status(500).send('Server error');
     }
 });
-  
 
 // Leave an existing carpool
 router.put('/leave/:carpoolId', authMiddleware, async (req, res) => {
@@ -99,8 +98,9 @@ router.put('/leave/:carpoolId', authMiddleware, async (req, res) => {
 
 // Create a new ride request (only for logged-in users)
 router.post('/ride-requests', authMiddleware, async (req, res) => {
-    console.log("Ride request received: ", req.body);  // Add this line to verify request hits the endpoint
     const { event, date, startLocation, endLocation } = req.body;
+
+    console.log("Received Ride Request Data:", req.body);
 
     try {
         const newRideRequest = new RideRequest({
@@ -109,12 +109,14 @@ router.post('/ride-requests', authMiddleware, async (req, res) => {
             date,
             startLocation,
             endLocation,
+            status: 'Pending'
         });
 
         const rideRequest = await newRideRequest.save();
+        console.log("Ride Request Saved:", rideRequest);
         res.json(rideRequest);
     } catch (err) {
-        console.error(err.message);
+        console.error('Error Saving Ride Request:', err.message);
         res.status(500).send('Server error');
     }
 });
@@ -123,12 +125,91 @@ router.post('/ride-requests', authMiddleware, async (req, res) => {
 router.get('/ride-requests', authMiddleware, async (req, res) => {
     try {
         const rideRequests = await RideRequest.find()
-            .populate('requester', 'name email');  // Populate requester's name and email
+            .populate('requester', 'name email')  // Populate requester's name and email
+            .populate('acceptedBy', 'name email');  // Populate acceptedBy's name and email
+
         res.json(rideRequests);
+    } catch (err) {
+        console.error('Error fetching ride requests:', err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// Cancel ride request (only for logged-in users who requested or accepted the ride)
+router.delete('/ride-requests/:rideRequestId', authMiddleware, async (req, res) => {
+    try {
+        const rideRequest = await RideRequest.findById(req.params.rideRequestId);
+        
+        if (!rideRequest) {
+            return res.status(404).json({ message: 'Ride request not found' });
+        }
+
+        if (rideRequest.requester.toString() !== req.user.id && (!rideRequest.acceptedBy || rideRequest.acceptedBy.toString() !== req.user.id)) {
+            return res.status(403).json({ message: 'Not authorized to cancel this ride request' });
+        }
+
+        await RideRequest.findByIdAndDelete(req.params.rideRequestId);
+        res.json({ message: 'Ride request cancelled successfully' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
     }
 });
+
+
+// Update ride request status and assign acceptedBy
+router.put('/ride-requests/:rideRequestId/status', authMiddleware, async (req, res) => {
+    const { status } = req.body;
+    try {
+        const rideRequest = await RideRequest.findById(req.params.rideRequestId);
+
+        if (!rideRequest) {
+            return res.status(404).json({ message: 'Ride request not found' });
+        }
+
+        rideRequest.status = status;
+        if (status === 'Accepted') {
+            rideRequest.acceptedBy = req.user.id;
+        }
+        await rideRequest.save();
+
+        res.json({ message: 'Ride request status updated', rideRequest });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// Add a note to a ride request
+router.post('/ride-requests/:rideRequestId/notes', authMiddleware, async (req, res) => {
+    const { content } = req.body;
+
+    if (!content) {
+        return res.status(400).json({ message: 'Note content is required' });
+    }
+
+    try {
+        const rideRequest = await RideRequest.findById(req.params.rideRequestId);
+
+        if (!rideRequest) {
+            return res.status(404).json({ message: 'Ride request not found' });
+        }
+
+        const newNote = {
+            content,
+            author: req.user.id,
+            createdAt: new Date(),
+        };
+
+        rideRequest.notes.push(newNote);
+        await rideRequest.save();
+
+        res.json({ message: 'Note added successfully', notes: rideRequest.notes });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
 
 module.exports = router;
