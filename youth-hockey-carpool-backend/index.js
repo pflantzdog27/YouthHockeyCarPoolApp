@@ -75,6 +75,10 @@ app.use('/api/auth', authRoutes);
 const carpoolRoutes = require('./routes/carpool'); 
 app.use('/api/carpools', carpoolRoutes);
 
+// Request Ride Routes
+const rideRequestRoutes = require('./routes/rideRequests'); 
+app.use('/api/carpools', rideRequestRoutes);
+
 // Import the auth middleware
 const authMiddleware = require('./authMiddleware');
 

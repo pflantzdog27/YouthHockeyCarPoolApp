@@ -36,3 +36,24 @@
     transform: rotate(360deg);
   }
 }
+
+
+/* Custom styles for the Mapbox Geocoder to match Material UI TextField */
+.mapboxgl-ctrl-geocoder input {
+  padding: 16.5px 15px 16.5px 30px; /* Match Material UI TextField padding */
+  font-size: 1rem; /* Match font size */
+  border-radius: 4px; /* Match border radius */
+  border: 1px solid rgba(0, 0, 0, 0.23); /* Match border color */
+  width: 100%; /* Full width to align with other inputs */
+  box-shadow: none; /* Remove any shadow for consistency */
+  height: 55px;
+}
+.mapboxgl-ctrl-geocoder--icon {
+  top: 17px;
+}
+.mapboxgl-ctrl-geocoder {
+  max-width: 100%; /* Ensure it doesn't exceed the container width */
+  width: 100%;
+  box-shadow: none !important; /* Remove any default shadow */
+  margin-bottom: 16px; /* Consistent margin like TextFields */
+}

@@ -9,6 +9,7 @@ import Carpool from './pages/Carpool';
 import RideRequest from './pages/RideRequest'; // Import the RideRequest page
 import RideRequests from './pages/RideRequests';
 import Navbar from './components/Navbar'; // Import the Navbar
+import { AuthProvider } from './utils/AuthContext';
 import { NotificationProvider } from './utils/NotificationContext';
 
 
@@ -16,6 +17,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <NotificationProvider>
+      <AuthProvider>
         <Router>
           {/* Add Navbar here so it appears on all pages */}
           <Navbar />
@@ -30,6 +32,7 @@ function App() {
             <Route path="/ride-requests" element={<RideRequests />} />
           </Routes>
         </Router>
+        </AuthProvider>
       </NotificationProvider>
     </ThemeProvider>
   );

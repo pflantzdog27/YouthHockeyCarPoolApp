@@ -18,10 +18,26 @@ const NoteSchema = new Schema({
 });
 
 const RideRequestSchema = new Schema({
-    event: String,
-    date: Date,
-    startLocation: String,
-    endLocation: String,
+    event: {
+        type: String,
+        required: true,
+    },
+    date: {
+        type: Date,
+        required: true,
+    },
+    startLocation: {
+        type: String,
+        required: true,
+    },
+    endLocation: {
+        type: String,
+        required: true,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
     requester: {
         type: Schema.Types.ObjectId,
         ref: 'User',
@@ -33,10 +49,11 @@ const RideRequestSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Accepted', 'Declined'],
+        enum: ['Pending', 'Accepted', 'Declined', 'Cancelled', 'cancelled'],
         default: 'Pending',
     },
     notes: [NoteSchema],
 });
+
 
 module.exports = mongoose.model('RideRequest', RideRequestSchema);
